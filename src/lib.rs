@@ -358,8 +358,8 @@ impl Table {
         unsafe {
             let raw = self.raw_element();
             (*raw).cp = Box::into_raw(handler) as *mut c_void;
-            (*raw).messageUser = Some(Self::message_handler);
-            // Don't set messageClass - it's not needed and causes compilation error
+            // Fix: Cast the function pointer to the correct type
+            (*raw).messageUser = Some(std::mem::transmute(Self::message_handler as extern "C" fn(*mut sys::UIElement, i32, i32, *mut c_void) -> i32));
         }
     }
 
@@ -370,7 +370,6 @@ impl Table {
             let data = if dp.is_null() { "" } else { std::ffi::CStr::from_ptr(dp as *const i8).to_str().unwrap_or("") };
             let result = handler.handle(&mut wrapper, message, data);
             if !result.is_empty() {
-                // Copy result to provided buffer if needed
                 if let Some(buffer) = dp.cast::<sys::UITableGetItem>().as_mut() {
                     let bytes = buffer.bufferBytes.min(result.len());
                     std::ptr::copy_nonoverlapping(result.as_ptr(), buffer.buffer as *mut u8, bytes);
