@@ -1,0 +1,23 @@
+name: Build and release
+
+on:
+  workflow_dispatch:
+  release:
+    types: [ created ]
+
+permissions:
+  contents: write
+
+jobs:
+  publish_crates_io:
+    name: Publish to crates.io
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+      - name: Install clang
+        run: sudo apt-get install clang libclang-dev
+      - name: Login with cargo
+        run: cargo login ${{ secrets.CRATES_IO_TOKEN }}
+      - name: Publish package
+        run: cargo publish

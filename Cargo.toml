@@ -1,0 +1,21 @@
+[package]
+name = "luigi-rs"
+version = "1.0.0"
+edition = "2021"
+links = "luigi"
+description = "Rust bindings for Luigi - a simple C GUI library"
+authors = ["ANKDDEV"]
+repository = "https://github.com/ankddev/luigi-rs"
+license = "MIT"
+homepage = "https://github.com/ankddev/luigi-rs"
+readme = "README.md"
+
+[build-dependencies]
+bindgen = "0.71"
+cc = "1.0"
+
+[target.'cfg(windows)'.build-dependencies]
+windows-sys = { version = "0.48", features = ["Win32_UI_WindowsAndMessaging", "Win32_Graphics_Gdi"] }
+
+[dependencies]
+libc = "0.2"
