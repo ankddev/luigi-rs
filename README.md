@@ -68,6 +68,10 @@ fn main() {
 }
 ```
 
+## Documentation
+
+Documentation can be found at [docs.rs](https://docs.rs/luigi-rs)
+
 ## Building from Source
 
 1. First, ensure you have the [bindgen requirements](https://rust-lang.github.io/rust-bindgen/requirements.html) installed.
