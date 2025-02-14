@@ -355,7 +355,7 @@ impl Table {
         unsafe {
             let raw = self.raw_element();
             (*raw).cp = Box::into_raw(handler) as *mut c_void;
-            // Fix: Change the transmute types to match exactly what the C API expects
+            // Keep everything as i32 to match the C API
             (*raw).messageUser = Some(std::mem::transmute::<
                 extern "C" fn(*mut sys::UIElement, i32, i32, *mut c_void) -> i32,
                 unsafe extern "C" fn(*mut sys::UIElement, i32, i32, *mut c_void) -> i32,
@@ -379,7 +379,7 @@ impl Table {
                     .to_str()
                     .unwrap_or("")
             };
-            let result = handler.handle(&mut wrapper, message, data);
+            let result = handler.handle(&mut wrapper, message, data); // No need to cast anymore
             if !result.is_empty() {
                 if let Some(buffer) = dp.cast::<sys::UITableGetItem>().as_mut() {
                     let bytes = buffer.bufferBytes.min(result.len());
