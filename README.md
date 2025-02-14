@@ -72,13 +72,18 @@ fn main() {
 
 1. First, ensure you have the [bindgen requirements](https://rust-lang.github.io/rust-bindgen/requirements.html) installed.
 
-2. Clone the repository:
+2. On Linux, install required X11 development packages:
+```bash
+sudo apt-get install libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev
+```
+
+3. Clone the repository:
 ```bash
 git clone https://github.com/ankddev/luigi-rs
 cd luigi-rs
 ```
 
-3. Build the project:
+4. Build the project:
 ```bash
 cargo build
 ```
