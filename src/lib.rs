@@ -355,14 +355,43 @@ impl Table {
         unsafe {
             let raw = self.raw_element();
             (*raw).cp = Box::into_raw(handler) as *mut c_void;
-            // Keep everything as i32 to match the C API
-            (*raw).messageUser = Some(std::mem::transmute::<
-                extern "C" fn(*mut sys::UIElement, i32, i32, *mut c_void) -> i32,
-                unsafe extern "C" fn(*mut sys::UIElement, i32, i32, *mut c_void) -> i32,
-            >(Self::message_handler));
+            #[cfg(target_os = "linux")]
+            {
+                (*raw).messageUser = Some(Self::message_handler as unsafe extern "C" fn(*mut sys::UIElement, u32, i32, *mut c_void) -> i32);
+            }
+            #[cfg(not(target_os = "linux"))]
+            {
+                (*raw).messageUser = Some(Self::message_handler as unsafe extern "C" fn(*mut sys::UIElement, i32, i32, *mut c_void) -> i32);
+            }
         }
     }
 
+    #[cfg(target_os = "linux")]
+    extern "C" fn message_handler(
+        element: *mut sys::UIElement,
+        message: u32,
+        di: i32,
+        dp: *mut c_void,
+    ) -> i32 {
+        unsafe {
+            let handler = &*((*element).cp as *const Box<dyn EventHandler>);
+            let mut wrapper = ElementWrapper { raw: element };
+            let data = if dp.is_null() { "" } else {
+                std::ffi::CStr::from_ptr(dp as *const i8).to_str().unwrap_or("")
+            };
+            let result = handler.handle(&mut wrapper, message as i32, data);
+            if !result.is_empty() {
+                if let Some(buffer) = dp.cast::<sys::UITableGetItem>().as_mut() {
+                    let bytes = buffer.bufferBytes.min(result.len());
+                    std::ptr::copy_nonoverlapping(result.as_ptr(), buffer.buffer as *mut u8, bytes);
+                    return bytes as i32;
+                }
+            }
+            0
+        }
+    }
+
+    #[cfg(not(target_os = "linux"))]
     extern "C" fn message_handler(
         element: *mut sys::UIElement,
         message: i32,
@@ -372,14 +401,10 @@ impl Table {
         unsafe {
             let handler = &*((*element).cp as *const Box<dyn EventHandler>);
             let mut wrapper = ElementWrapper { raw: element };
-            let data = if dp.is_null() {
-                ""
-            } else {
-                std::ffi::CStr::from_ptr(dp as *const i8)
-                    .to_str()
-                    .unwrap_or("")
+            let data = if dp.is_null() { "" } else {
+                std::ffi::CStr::from_ptr(dp as *const i8).to_str().unwrap_or("")
             };
-            let result = handler.handle(&mut wrapper, message, data); // No need to cast anymore
+            let result = handler.handle(&mut wrapper, message, data);
             if !result.is_empty() {
                 if let Some(buffer) = dp.cast::<sys::UITableGetItem>().as_mut() {
                     let bytes = buffer.bufferBytes.min(result.len());
