@@ -10,7 +10,7 @@ fn main() {
     if cfg!(target_os = "windows") {
         println!("cargo:rustc-link-lib=user32");
         println!("cargo:rustc-link-lib=gdi32");
-        println!("cargo:rustc-link-lib=shell32"); 
+        println!("cargo:rustc-link-lib=shell32");
     } else if cfg!(target_os = "linux") {
         println!("cargo:rustc-link-lib=X11");
         println!("cargo:rustc-link-lib=Xext");
