@@ -11,7 +11,7 @@ homepage = "https://github.com/ankddev/luigi-rs"
 readme = "README.md"
 
 [build-dependencies]
-bindgen = "0.71"
+bindgen = "0.72"
 cc = "1.2"
 
 [target.'cfg(windows)'.build-dependencies]
